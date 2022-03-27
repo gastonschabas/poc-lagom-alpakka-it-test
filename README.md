@@ -2,6 +2,17 @@
 
 An integration test to validate that a kafka message was published by read side processor using alpakka
 
+# Table of Contents
+
+- [Requirements](#requirements)
+- [Description](#description)
+- [How the project is built](#how-the-project-is-built)
+    - [Stack](#stack)
+    - [PocServiceLoader](#pocserviceloader)
+- [KafkaHelper](#kafkahelper)
+- [PocHelloMessagePublisher](#pochellomessagepublisher)
+    - [Integration Test](#integration-test)
+
 # Requirements
 
 - [docker](https://www.docker.com/) 20.10.12
