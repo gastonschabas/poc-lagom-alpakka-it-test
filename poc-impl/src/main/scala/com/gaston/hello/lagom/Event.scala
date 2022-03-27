@@ -1,6 +1,9 @@
 package com.gaston.hello.lagom
 
-import com.lightbend.lagom.scaladsl.persistence.{AggregateEvent, AggregateEventTag}
+import com.lightbend.lagom.scaladsl.persistence.{
+  AggregateEvent,
+  AggregateEventTag
+}
 import play.api.libs.json.Json
 
 sealed trait HelloEvent extends AggregateEvent[HelloEvent] {
