@@ -1,6 +1,7 @@
-ThisBuild / version := "0.0.0"
-
+ThisBuild / version      := "0.0.0"
 ThisBuild / scalaVersion := "2.13.8"
+ThisBuild / libraryDependencySchemes +=
+  "org.scala-lang.modules" %% "scala-java8-compat" % VersionScheme.Always
 
 lazy val root = (project in file("."))
   .settings(

@@ -1,0 +1,26 @@
+<configuration>
+
+    <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>[%highlight(%-5level)] %d - %logger - %cyan(%thread) - %msg %n</pattern>
+        </encoder>
+    </appender>
+
+    <appender name="ASYNC" class="ch.qos.logback.classic.AsyncAppender">
+        <appender-ref ref="STDOUT"/>
+    </appender>
+
+    <logger name="akka.serialization" level="INFO"/>
+    <logger name="com.github" level="INFO"/>
+    <logger name="org.testcontainers" level="INFO"/>
+    <logger name="com.zaxxer.hikari" level="INFO"/>
+    <logger name="slick" level="INFO"/>
+    <logger name="slick.jdbc.JdbcBackend.statement" level="INFO"/>
+    <logger name="slick.jdbc.JdbcBackend.parameter" level="INFO"/>
+    <logger name="slick.jdbc.JdbcBackend.parameter" level="INFO"/>
+    <logger name="slick.jdbc.StatementInvoker.result" level="INFO"/>
+
+    <root level="INFO">
+        <appender-ref ref="ASYNC"/>
+    </root>
+</configuration>
