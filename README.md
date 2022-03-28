@@ -63,4 +63,12 @@ register [PocHelloMessagePublisher](src/main/scala/com/gaston/hello/lagom/PocHel
 it simulates that an event was persisted in the [event journal](https://www.lagomframework.com/documentation/1.6.x/scala/UsingAkkaPersistenceTyped.html).
 Doing that the read side processor will pick up that event and publish a message in a kafka topic. Then a 
 [Consumer](https://doc.akka.io/docs/alpakka-kafka/current/consumer.html) will subscribe to the same topic to be able to
-consume that message.
+consume that message. The test can be executed using the following command
+
+```shell
+sbt test
+```
+
+In the log messages you would be able to see the kafka and postgresql containers starting, then the service application,
+followed by the kafka producer and finally the test starting the consumer to validate that the message was published in
+the topic as expected
