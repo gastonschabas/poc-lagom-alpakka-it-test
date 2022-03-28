@@ -16,7 +16,6 @@ import play.api.Configuration
 import play.api.libs.json.{JsError, JsSuccess, Json}
 
 import java.util.UUID
-import java.util.concurrent.atomic.AtomicInteger
 
 class PocHelloMessagePublisherTest
     extends AsyncFunSuite
@@ -52,15 +51,12 @@ class PocHelloMessagePublisherTest
             "db.default.driver" -> postgresql.driverClassName,
             "akka.kafka.producer.kafka-clients.security.protocol" -> "PLAINTEXT",
             "akka.kafka.consumer.kafka-clients.security.protocol" -> "PLAINTEXT",
-            "kafka.brokers" -> kafka.bootstrapServers,
-            "lagom.persistence.jdbc.create-tables.auto" -> false
+            "kafka.brokers" -> kafka.bootstrapServers
           ).underlying
         override lazy val readSide = new ReadSideTestDriver()
       }
     )
   }
-
-  lazy val offsetSequence = new AtomicInteger()
 
   implicit lazy val actorSystem: ActorSystem = server.application.actorSystem
 
@@ -71,10 +67,10 @@ class PocHelloMessagePublisherTest
         HelloPersisted("persisted"),
         Offset.sequence(1)
       )
-      .map { _ =>
+      .map(_ =>
         server.application.consumer
           .map(x =>
-            PocHelloMessage.format.reads(Json.parse(x.value())) match {
+            PocHelloMessage.format.reads(Json.parse(x.record.value())) match {
               case JsSuccess(value, _) => value
               case JsError(errors) =>
                 fail(s"error parsing kafka message.\n${Json
@@ -84,7 +80,7 @@ class PocHelloMessagePublisherTest
           .runWith(TestSink.probe[PocHelloMessage])
           .request(1)
           .expectNext(PocHelloMessage("persisted"))
-      }
+      )
       .map(_ => succeed)
   }
 
@@ -95,10 +91,10 @@ class PocHelloMessagePublisherTest
         HelloPersisted("persisted 2"),
         Offset.sequence(2)
       )
-      .map { _ =>
+      .map(_ =>
         server.application.consumer
           .map(x =>
-            PocHelloMessage.format.reads(Json.parse(x.value())) match {
+            PocHelloMessage.format.reads(Json.parse(x.record.value())) match {
               case JsSuccess(value, _) => value
               case JsError(errors) =>
                 fail(s"error parsing kafka message.\n${Json
@@ -108,7 +104,7 @@ class PocHelloMessagePublisherTest
           .runWith(TestSink.probe[PocHelloMessage])
           .request(1)
           .expectNext(PocHelloMessage("persisted 2"))
-      }
+      )
       .map(_ => succeed)
   }
 }
