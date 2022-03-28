@@ -2,7 +2,7 @@ package com.gaston.hello.lagom
 
 import akka.actor.ActorSystem
 import akka.persistence.query.Offset
-import akka.stream.testkit.scaladsl.TestSink
+import akka.stream.scaladsl.Sink
 import com.dimafeng.testcontainers.lifecycle.and
 import com.dimafeng.testcontainers.scalatest.TestContainersForAll
 import com.dimafeng.testcontainers.{KafkaContainer, PostgreSQLContainer}
@@ -58,21 +58,18 @@ class PocHelloMessagePublisherTest
             HelloPersisted("persisted"),
             Offset.sequence(1)
           )
-          .map { _ =>
+          .flatMap { _ =>
             server.application.consumer
               .map(x =>
-                HelloPersisted.format.reads(Json.parse(x.value())) match {
+                PocHelloMessage.format.reads(Json.parse(x.value())) match {
                   case JsSuccess(value, _) => value
                   case JsError(errors) =>
                     fail(s"error parsing kafka message.\n${Json
                       .prettyPrint(JsError.toJson(errors))}")
                 }
               )
-              .runWith(TestSink.probe[HelloPersisted](actorSystem))
-              .expectNext(HelloPersisted("persisted"))
-          }
-          .map { _ =>
-            succeed
+              .runWith(Sink.head[PocHelloMessage])
+              .map(x => x should be(PocHelloMessage("persisted")))
           }
       }
     }
