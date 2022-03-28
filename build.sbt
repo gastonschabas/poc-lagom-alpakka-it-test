@@ -6,7 +6,16 @@ ThisBuild / libraryDependencySchemes +=
 lazy val root = (project in file("."))
   .settings(
     name         := "POC Lagom Alpakka IT Test",
-    organization := "com.gaston.schabas"
+    organization := "com.gaston.schabas",
+    scalacOptions := Seq(
+      "-encoding",
+      "utf8",
+      "-deprecation",
+      "-feature",
+      "-unchecked",
+      "-Xfatal-warnings",
+      "-language:higherKinds"
+    )
   )
   .aggregate(`poc-api`, `poc-impl`)
 
