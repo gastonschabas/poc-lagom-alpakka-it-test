@@ -42,7 +42,7 @@ abstract class PocApplication(context: LagomApplicationContext)
 
   lazy val kafkaHelper = wire[KafkaHelper]
 
-  lazy val consumer = Consumer.plainSource(
+  lazy val consumer = Consumer.committableSource(
     ConsumerSettings(
       actorSystem.settings.config.getConfig("akka.kafka.consumer"),
       new StringDeserializer,
