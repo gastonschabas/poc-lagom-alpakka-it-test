@@ -2,6 +2,7 @@ package com.gaston.hello.lagom
 
 import akka.actor.ActorSystem
 import akka.persistence.query.Offset
+import akka.stream.scaladsl.Keep
 import akka.stream.testkit.scaladsl.TestSink
 import com.dimafeng.testcontainers.lifecycle.and
 import com.dimafeng.testcontainers.scalatest.TestContainersForAll
@@ -49,8 +50,7 @@ class PocHelloMessagePublisherTest
             "db.default.username" -> postgresql.username,
             "db.default.password" -> postgresql.password,
             "db.default.driver" -> postgresql.driverClassName,
-            "akka.kafka.producer.kafka-clients.security.protocol" -> "PLAINTEXT",
-            "akka.kafka.consumer.kafka-clients.security.protocol" -> "PLAINTEXT",
+            "akka.kafka.consumer.kafka-clients.enable.auto.commit" -> true,
             "kafka.brokers" -> kafka.bootstrapServers
           ).underlying
         override lazy val readSide = new ReadSideTestDriver()
@@ -67,8 +67,8 @@ class PocHelloMessagePublisherTest
         HelloPersisted("persisted"),
         Offset.sequence(1)
       )
-      .map(_ =>
-        server.application.consumer
+      .flatMap { _ =>
+        val (consumer, probe) = server.application.consumer
           .map(x =>
             PocHelloMessage.format.reads(Json.parse(x.record.value())) match {
               case JsSuccess(value, _) => value
@@ -77,11 +77,16 @@ class PocHelloMessagePublisherTest
                   .prettyPrint(JsError.toJson(errors))}")
             }
           )
-          .runWith(TestSink.probe[PocHelloMessage])
-          .request(1)
-          .expectNext(PocHelloMessage("persisted"))
-      )
-      .map(_ => succeed)
+          .toMat(TestSink.probe[PocHelloMessage])(Keep.both)
+          .run
+        for {
+          assertion <- probe.requestNext() should be(
+            PocHelloMessage("persisted")
+          )
+          _ <- consumer.stop()
+          _ <- consumer.shutdown()
+        } yield assertion
+      }
   }
 
   test("testing read-side processor 2") {
@@ -91,8 +96,8 @@ class PocHelloMessagePublisherTest
         HelloPersisted("persisted 2"),
         Offset.sequence(2)
       )
-      .map(_ =>
-        server.application.consumer
+      .flatMap { _ =>
+        val (consumer, probe) = server.application.consumer
           .map(x =>
             PocHelloMessage.format.reads(Json.parse(x.record.value())) match {
               case JsSuccess(value, _) => value
@@ -101,10 +106,15 @@ class PocHelloMessagePublisherTest
                   .prettyPrint(JsError.toJson(errors))}")
             }
           )
-          .runWith(TestSink.probe[PocHelloMessage])
-          .request(1)
-          .expectNext(PocHelloMessage("persisted 2"))
-      )
-      .map(_ => succeed)
+          .toMat(TestSink.probe[PocHelloMessage])(Keep.both)
+          .run
+        for {
+          assertion <- probe.requestNext() should be(
+            PocHelloMessage("persisted 2")
+          )
+          _ <- consumer.stop()
+          _ <- consumer.shutdown()
+        } yield assertion
+      }
   }
 }
