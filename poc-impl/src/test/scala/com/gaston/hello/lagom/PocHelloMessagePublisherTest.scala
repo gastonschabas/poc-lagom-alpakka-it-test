@@ -51,7 +51,8 @@ class PocHelloMessagePublisherTest
             "db.default.password" -> postgresql.password,
             "db.default.driver" -> postgresql.driverClassName,
             "akka.kafka.consumer.kafka-clients.enable.auto.commit" -> true,
-            "kafka.brokers" -> kafka.bootstrapServers
+            "kafka.brokers" -> kafka.bootstrapServers,
+            "akka.kafka.consumer.stop-timeout" -> 0
           ).underlying
         override lazy val readSide = new ReadSideTestDriver()
       }
